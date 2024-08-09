@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Built-By: e5685360
-Build-Jdk: 17.0.5
-Implementation-Title: web
-Implementation-Version: 0.0.1-SNAPSHOT
-Implementation-Vendor-Id: com.Bank
-Implementation-URL: https://spring.io/projects/spring-boot/web
-Created-By: Maven Integration for Eclipse
-
