@@ -94,31 +94,31 @@
 			</tr>
 			<c:forEach var="s" items="${sd}">
 			<tr>
-				<td data-cell="Stock Id">${s.stock_id}</td>
-				<td data-cell="Stock Name">${s.stock_name}</td>
+				<td data-cell="Stock Id"><c:out value="${s.stock_id}" escapeXml="true"/></td>
+				<td data-cell="Stock Name"><c:out value="${s.stock_name}" escapeXml="true"/></td>
 				<c:if test="${not empty ind}">
-					<td data-cell="Original Price"><span>&#8377 </span>${s.original_price}</td>
+					<td data-cell="Original Price"><span>&#8377 </span><c:out value="${s.original_price}" escapeXml="true"/></td>
 				</c:if>
 				<c:if test="${not empty usd}">
-					<td data-cell="Original Price"><span>&#36 </span>${s.original_price}</td>
+					<td data-cell="Original Price"><span>&#36 </span><c:out value="${s.original_price}" escapeXml="true"/></td>
 				</c:if>
 				<c:if test="${not empty euro}">
-					<td data-cell="Original Price"><span>&#8364 </span>${s.original_price}</td>
+					<td data-cell="Original Price"><span>&#8364 </span><c:out value="${s.original_price}" escapeXml="true"/></td>
 				</c:if>	
 				
 				<c:if test="${not empty ind}">
-					<td data-cell="Market Price"><span>&#8377 </span>${s.market_price}</td>
+					<td data-cell="Market Price"><span>&#8377 </span><c:out value="${s.market_price}" escapeXml="true"/></td>
 				</c:if>
 				<c:if test="${not empty usd}">
-					<td data-cell="Market Price"><span>&#36 </span>${s.market_price}</td>
+					<td data-cell="Market Price"><span>&#36 </span><c:out value="${s.market_price}" escapeXml="true"/></td>
 				</c:if>
 				<c:if test="${not empty euro}">
-					<td data-cell="Market Price"><span>&#8364 </span>${s.market_price}</td>
+					<td data-cell="Market Price"><span>&#8364 </span><c:out value="${s.market_price}" escapeXml="true"/></td>
 				</c:if>	
 				
-				<td data-cell="No of Stocks">${s.no_stocks}</td>
+				<td data-cell="No of Stocks"><c:out value="${s.no_stocks}" escapeXml="true"/></td>
 				
-				<td data-cell="#"><a class="link" href="sellstock/${d.getAcc_no()}/${s.stock_name}/${s.sno}">SELL</a></td>
+				<td data-cell="#"><a class="link" href="sellstock/${d.getAcc_no()}/<c:out value='${s.stock_name}' escapeXml='true'/>/${s.sno}">SELL</a></td>
 			</tr>
 			</c:forEach>
 			
@@ -211,22 +211,22 @@
 			</tr>
 			<c:forEach var="ns" items="${nsd}">
 			<tr>	
-				<td data-cell="Stock Id">${ns.stock_id}</td>
-				<td data-cell="Stock Name">${ns.stock_name}</td>
+				<td data-cell="Stock Id"><c:out value="${ns.stock_id}" escapeXml="true"/></td>
+				<td data-cell="Stock Name"><c:out value="${ns.stock_name}" escapeXml="true"/></td>
 				
 				<c:if test="${not empty ind}">
-					<td data-cell="Stock Price"><span>&#8377 </span>${ns.stock_price}</td>
+					<td data-cell="Stock Price"><span>&#8377 </span><c:out value="${ns.stock_price}" escapeXml="true"/></td>
 				</c:if>
 				<c:if test="${not empty usd}">
-					<td data-cell="Stock Price"><span>&#36 </span>${ns.stock_price}</td>
+					<td data-cell="Stock Price"><span>&#36 </span><c:out value="${ns.stock_price}" escapeXml="true"/></td>
 				</c:if> 
 				<c:if test="${not empty euro}">
-					<td data-cell="Stock Price"><span>&#8364 </span>${ns.stock_price}</td>
+					<td data-cell="Stock Price"><span>&#8364 </span><c:out value="${ns.stock_price}" escapeXml="true"/></td>
 				</c:if>	
 		
-				<td data-cell="No of Stocks">${ns.no_of_avl_stocks}</td>
+				<td data-cell="No of Stocks"><c:out value="${ns.no_of_avl_stocks}" escapeXml="true"/></td>
 			
-				<td data-cell="#"><a class="link" href="buystock/${ns.stock_name}/${ns.stock_id}/${d.getAcc_no()}">BUY</a></td>
+				<td data-cell="#"><a class="link" href="buystock/<c:out value='${ns.stock_name}' escapeXml='true'/>/<c:out value='${ns.stock_id}' escapeXml='true'/>/${d.getAcc_no()}">BUY</a></td>
 			</tr>
 			</c:forEach> 
 		</table>
