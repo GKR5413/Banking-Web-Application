@@ -21,11 +21,15 @@ import com.Bank.web.controller.bean.pagination;
 import com.Bank.web.controller.bean.selectedStockDetails;
 import com.Bank.web.controller.bean.shares;
 import com.Bank.web.service.UserService;
+import com.Bank.web.util.SecurityUtil;
 
 @Controller
 public class dematController {
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	SecurityUtil securityUtil;
 	
 	@RequestMapping(value="/Rdemat", method= RequestMethod.GET)
 	public String reload(@RequestParam(value="pgno1", required=false, defaultValue="0") int pgno1,
@@ -263,6 +267,16 @@ public class dematController {
 	@RequestMapping(value = "/buystock/{stock_name}/{stock_id}/{dematAccNo}", method = RequestMethod.GET)
 	public String buyStock(@PathVariable(value = "stock_name") String sName, @PathVariable(value = "stock_id") String stock_id,
 			@PathVariable(value = "dematAccNo") long daccno, HttpSession session, Model model, RedirectAttributes rs) {
+		
+		if (!securityUtil.isAuthenticated(session)) {
+			return "redirect:/login";
+		}
+		
+		if (!securityUtil.validateDematAccountOwnership(session, daccno)) {
+			rs.addFlashAttribute("alert_msg", new AlertBean("Unauthorized access attempt"));
+			return "redirect:/demat";
+		}
+		
 		String var = "yas";
 		rs.addFlashAttribute("uid", var);
 		rs.addFlashAttribute("sName", sName);
@@ -276,12 +290,18 @@ public class dematController {
 	public String buystockController(@ModelAttribute("uid") String uid, @ModelAttribute("sName") String sName, @ModelAttribute("stock_id") String stock_id,
 			@ModelAttribute("daccno") long daccno, Model model, HttpSession session, RedirectAttributes rs) {
 
-		//if (!uid.isEmpty()) {
-
-			if (((String) session.getAttribute("ssid")) != null) {
-				selectedStockDetails sd = new selectedStockDetails();
-				sd = userService.stockDetails(sName, stock_id,daccno);
-				model.addAttribute("sd", sd);
+			if (!securityUtil.isAuthenticated(session)) {
+				return "redirect:/login";
+			}
+			
+			Long userDematAccNo = securityUtil.getUserDematAccountNo(session);
+			if (userDematAccNo == null) {
+				return "redirect:/login";
+			}
+			
+			selectedStockDetails sd = new selectedStockDetails();
+			sd = userService.stockDetails(sName, stock_id, userDematAccNo);
+			model.addAttribute("sd", sd);
 				
 				// Currency Symbol Variables
 				String Currency = (String) session.getAttribute("Currency");
@@ -295,13 +315,7 @@ public class dematController {
 				}
 				
 				return "Buy_Stocks";
-			} else {
-				return "redirect:/login";
-			}
-		} //else {
-//			return "redirect:/login";
-//		}
-//	}
+		}
 
 	
 	  @RequestMapping(value = "/buySelectedStock", method = RequestMethod.POST)
@@ -338,6 +352,20 @@ public class dematController {
 		public String sellStock(@PathVariable(value = "stock_name") String sName, @PathVariable(value = "demataccno") String daccno,
 				@PathVariable(value = "stockid") long stockid, HttpSession session, Model model, RedirectAttributes rs) {
 			
+			if (!securityUtil.isAuthenticated(session)) {
+				return "redirect:/login";
+			}
+			
+			try {
+				long dematAccNo = Long.parseLong(daccno);
+				if (!securityUtil.validateDematAccountOwnership(session, dematAccNo)) {
+					rs.addFlashAttribute("alert_msg", new AlertBean("Unauthorized access attempt"));
+					return "redirect:/demat";
+				}
+			} catch (NumberFormatException e) {
+				return "redirect:/demat";
+			}
+			
 			String var = "yas";
 			rs.addFlashAttribute("uid", var);
 			rs.addFlashAttribute("sName", sName);
@@ -349,37 +377,32 @@ public class dematController {
 	  @RequestMapping(value ="/sellstock", method = RequestMethod.GET)
 	  public String getSellStock(@ModelAttribute("uid") String uid, @ModelAttribute("sName") String sName,
 				@ModelAttribute("stockid") long stockid, @ModelAttribute("daccno") long daccno, Model model, HttpSession session, RedirectAttributes rs) {
-			//if (!uid.isEmpty()) {
 
-				if (((String) session.getAttribute("ssid")) != null) {
-					
-					selectedStockDetails sd = new selectedStockDetails();
-					sd = userService.stockDetails(stockid, sName, daccno);
-					model.addAttribute("sd", sd);
-					
-					// Currency Symbol Variables
-					String Currency = (String) session.getAttribute("Currency");
-
-					if (Currency.equals("rupee")) {
-						model.addAttribute("ind", "indianRupee");
-					} else if (Currency.equals("usd")) {
-						model.addAttribute("usd", "usDollar");
-					} else {
-						model.addAttribute("euro", "europeanEuro");
-					}
-					
-					return "Sell_Stock";
-					
-				} else {
-					
-					return "redirect:/login";
-				
-				}
+			if (!securityUtil.isAuthenticated(session)) {
+				return "redirect:/login";
 			}
-//		 else {
-//				return "redirect:/login";
-//			}
-//	  }
+			
+			Long userDematAccNo = securityUtil.getUserDematAccountNo(session);
+			if (userDematAccNo == null) {
+				return "redirect:/login";
+			}
+			
+			selectedStockDetails sd = new selectedStockDetails();
+			sd = userService.stockDetails(stockid, sName, userDematAccNo);
+			model.addAttribute("sd", sd);
+			
+			String Currency = (String) session.getAttribute("Currency");
+
+			if (Currency.equals("rupee")) {
+				model.addAttribute("ind", "indianRupee");
+			} else if (Currency.equals("usd")) {
+				model.addAttribute("usd", "usDollar");
+			} else {
+				model.addAttribute("euro", "europeanEuro");
+			}
+			
+			return "Sell_Stock";
+		}
 	  
 	  @RequestMapping(value = "/sellselectedstock", method = RequestMethod.POST)
 	  public String sellstock(@RequestParam int sno, @RequestParam String stock_name, @RequestParam int quantity, Model model, HttpSession session, RedirectAttributes rs) {
