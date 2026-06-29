@@ -55,6 +55,27 @@ public class UserController {
 			@ModelAttribute("alert_msg") AlertBean alert, HttpSession session, RedirectAttributes rs) {
 
 	     AlertBean alert1 = new AlertBean();
+	     
+	     if (userId == null || userId.isEmpty() || !userId.matches("^[0-9]{1,10}$")) {
+	    	 model.clear();
+	    	 model.addAttribute("Invalid_Credentials", "Invalid credentials. Please check your User ID and Password.");
+	    	 model.addAttribute("alert_msg", alert1.getAlert());
+	    	 return "index";
+	     }
+	     
+	     int parsedUserId;
+	     try {
+	    	 parsedUserId = Integer.parseInt(userId);
+	    	 if (parsedUserId < 0) {
+	    		 throw new NumberFormatException("Negative user ID");
+	    	 }
+	     } catch (NumberFormatException e) {
+	    	 model.clear();
+	    	 model.addAttribute("Invalid_Credentials", "Invalid credentials. Please check your User ID and Password.");
+	    	 model.addAttribute("alert_msg", alert1.getAlert());
+	    	 logger.warn("Invalid userId format attempted: {}", userId);
+	    	 return "index";
+	     }
 	
 	    User user = userService.getUserByUserId(userId);
  
@@ -71,7 +92,7 @@ public class UserController {
 			String secureSessionId = Base64.getUrlEncoder().withoutPadding().encodeToString(sessionIdBytes);
 			
 			session.setAttribute("ssid", secureSessionId);
-			session.setAttribute("usid", Integer.parseInt(userId));
+			session.setAttribute("usid", parsedUserId);
 			
 			String var= "yas";
 			rs.addFlashAttribute("uid", var);

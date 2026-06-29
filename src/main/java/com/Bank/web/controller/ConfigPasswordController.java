@@ -63,7 +63,19 @@ public class ConfigPasswordController {
 	@RequestMapping(value = "/resetpassword", method = RequestMethod.POST)
 	public String Resetpassword(ModelMap model, @RequestParam String usr_id ,@RequestParam String cred, @RequestParam String cred2, RedirectAttributes rs) {
 	
-		int user_id = Integer.parseInt(usr_id); 	
+		if (usr_id == null || usr_id.isEmpty() || !usr_id.matches("^[0-9]{1,10}$")) {
+			return "redirect:/login";
+		}
+		
+		int user_id;
+		try {
+			user_id = Integer.parseInt(usr_id);
+			if (user_id < 0) {
+				return "redirect:/login";
+			}
+		} catch (NumberFormatException e) {
+			return "redirect:/login";
+		}
 		
 		if(cred.equals(cred2)) {
 			
