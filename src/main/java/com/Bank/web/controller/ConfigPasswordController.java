@@ -35,21 +35,16 @@ public class ConfigPasswordController {
 	public String forgotpass( ModelMap model,@RequestParam int usr_id, @RequestParam String email, RedirectAttributes redirectAttributes) {
 		forgotPass user = userService.validateUser(usr_id);
 		
-		if(user.getEmail() != null) {	// Checking if UserId is valid
-			if(user.getEmail().equals(email)) {
-				redirectAttributes.addFlashAttribute("usvid", usr_id);
-				return "redirect:/resetpassword";	
-			}else {
-				model.clear();
-				String error =  "Incorrect Email, Please check your Email and try again";
-				model.addAttribute("Invalid_Email", error);
-				return "forgotpassword"; // Redirect back to login with wrong Email error
-			}
-		}else {
+		boolean validCredentials = user.getEmail() != null && user.getEmail().equals(email);
+		
+		if(validCredentials) {
+			redirectAttributes.addFlashAttribute("usvid", usr_id);
+			return "redirect:/resetpassword";	
+		} else {
 			model.clear();
-			String error = "Incorrect UserId, Please check your UserId and try again";
-			model.addAttribute("Invalid_UserId", error);
-			return "forgotpassword";	// Redirect back to forgotpassword with wrong userid error
+			String error = "If the provided User ID and Email match our records, you will be redirected to reset your password.";
+			model.addAttribute("Validation_Message", error);
+			return "forgotpassword";
 		}
 	}
 		

@@ -21,11 +21,8 @@
     </div>
     
 	    <div class="header_row_error">
-		    <c:if test="${not empty Invalid_Password}">
-		    	<p class="error_password"><span id="error_string">ERROR: </span><c:out value="${Invalid_Password}" escapeXml="true"/></p>
-		    </c:if>
-		    <c:if test="${not empty Invalid_UserId}">
-		       	<p class="error_userid"><span id="error_string">ERROR: </span><c:out value="${Invalid_UserId}" escapeXml="true"/></p>
+		    <c:if test="${not empty Invalid_Credentials}">
+		    	<p class="error_credentials"><span id="error_string">ERROR: </span><c:out value="${Invalid_Credentials}" escapeXml="true"/></p>
 		    </c:if>
 	    </div>
 	    

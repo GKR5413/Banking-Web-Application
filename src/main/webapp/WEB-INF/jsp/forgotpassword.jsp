@@ -25,11 +25,8 @@
     </div>
   
   <div class="header_row_error">
-	       <c:if test="${not empty Invalid_Email}">
-           		<p class="error_email"><span id="error_string">ERROR: </span><c:out value="${Invalid_Email}" escapeXml="true"/></p>
-           </c:if>
-           <c:if test="${not empty Invalid_UserId}">
-           		<p class="error_userid"><span id="error_string">ERROR: </span><c:out value="${Invalid_UserId}" escapeXml="true"/></p>
+	       <c:if test="${not empty Validation_Message}">
+           		<p class="info_message"><c:out value="${Validation_Message}" escapeXml="true"/></p>
            </c:if>
     </div>
   <div class="outer-container">

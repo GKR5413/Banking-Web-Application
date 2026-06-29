@@ -57,31 +57,30 @@ public class UserController {
 	
 	    User user = userService.getUserByUserId(userId);
  
-		if(user.getCred() != null) {
-			if(passwordUtil.verifyPassword(cred, user.getCred())) {
-				SecureRandom secureRandom = new SecureRandom();
-				byte[] sessionIdBytes = new byte[32];
-				secureRandom.nextBytes(sessionIdBytes);
-				String secureSessionId = Base64.getUrlEncoder().withoutPadding().encodeToString(sessionIdBytes);
-				
-				session.setAttribute("ssid", secureSessionId);
-				session.setAttribute("usid", Integer.parseInt(userId));
-				
-				String var= "yas";
-				rs.addFlashAttribute("uid", var);
-				return "redirect:/account";	
-			}else {
-				model.clear();
-				String error =  "Incorrect Password, Please check your Password and try again";
-				model.addAttribute("Invalid_Password", error);
-				model.addAttribute("alert_msg" ,alert1.getAlert());
-				return "index";
-			}
-		}else {
+		boolean loginSuccess = false;
+		
+		if(user.getCred() != null && passwordUtil.verifyPassword(cred, user.getCred())) {
+			loginSuccess = true;
+		}
+		
+		if (loginSuccess) {
+			SecureRandom secureRandom = new SecureRandom();
+			byte[] sessionIdBytes = new byte[32];
+			secureRandom.nextBytes(sessionIdBytes);
+			String secureSessionId = Base64.getUrlEncoder().withoutPadding().encodeToString(sessionIdBytes);
+			
+			session.setAttribute("ssid", secureSessionId);
+			session.setAttribute("usid", Integer.parseInt(userId));
+			
+			String var= "yas";
+			rs.addFlashAttribute("uid", var);
+			return "redirect:/account";	
+		} else {
 			model.clear();
-			String error = "Incorrect UserId, Please check your UserId and try again";
-			model.addAttribute("Invalid_UserId", error);
-			model.addAttribute("alert_msg" ,alert1.getAlert());
+			String error = "Invalid credentials. Please check your User ID and Password.";
+			model.addAttribute("Invalid_Credentials", error);
+			model.addAttribute("alert_msg", alert1.getAlert());
+			logger.warn("Failed login attempt for userId: {}", userId);
 			return "index";
 		}
 	}
