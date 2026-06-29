@@ -6,7 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Random;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 
 import javax.servlet.http.HttpSession;
@@ -50,18 +51,20 @@ public class UserController {
 	public String welcomePage( ModelMap model,@RequestParam String userId, @RequestParam String cred, 
 			@ModelAttribute("alert_msg") AlertBean alert, HttpSession session, RedirectAttributes rs) {
 
-		 Random r = new Random();
-	     int n = r.nextInt();
-	     String Hexadecimal = Integer.toHexString(n);
-	     session.setAttribute("ssid", Hexadecimal);  	     
-	     session.setAttribute("usid", Integer.parseInt(userId));
-	     
 	     AlertBean alert1 = new AlertBean();
 	
 	    User user = userService.getUserByUserId(userId);
  
 		if(user.getCred() != null) {
 			if(passwordUtil.verifyPassword(cred, user.getCred())) {
+				SecureRandom secureRandom = new SecureRandom();
+				byte[] sessionIdBytes = new byte[32];
+				secureRandom.nextBytes(sessionIdBytes);
+				String secureSessionId = Base64.getUrlEncoder().withoutPadding().encodeToString(sessionIdBytes);
+				
+				session.setAttribute("ssid", secureSessionId);
+				session.setAttribute("usid", Integer.parseInt(userId));
+				
 				String var= "yas";
 				rs.addFlashAttribute("uid", var);
 				return "redirect:/account";	
