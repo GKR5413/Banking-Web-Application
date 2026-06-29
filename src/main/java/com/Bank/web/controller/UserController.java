@@ -1,18 +1,13 @@
 package com.Bank.web.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-
 import javax.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -29,16 +24,23 @@ import com.Bank.web.controller.bean.User;
 import com.Bank.web.controller.bean.User_Signup;
 import com.Bank.web.controller.bean.uniqueVariablesCheck;
 import com.Bank.web.service.UserService;
+import com.Bank.web.util.FileUploadUtil;
+import com.Bank.web.util.FileUploadUtil.FileUploadResult;
 import com.Bank.web.util.PasswordUtil;
 
 @Controller
 public class UserController {
+	
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 	
 	@Autowired
 	UserService userService;
 	
 	@Autowired
 	PasswordUtil passwordUtil;
+	
+	@Autowired
+	FileUploadUtil fileUploadUtil;
 	
 //	Login API
 	@RequestMapping(value = "/login", method = RequestMethod.GET)
@@ -98,36 +100,37 @@ public class UserController {
 								@RequestParam String cred, @RequestParam String cred2, ModelMap model, BindingResult result, 
 								RedirectAttributes rs,HttpSession session) {
 
+		int tempUserId = 0;
 		
-		if(file_1 == null) {
+		if(file_1 == null || file_1.isEmpty()) {
 			user_data.setResidential_proof("No File Uploaded");
-			System.out.println("Residential Proof not uploaded!");
+			logger.debug("Residential Proof not uploaded");
 		}
 		else {
-			user_data.setResidential_proof(file_1.getOriginalFilename());
-			try {
-				File saveFile = new ClassPathResource("/").getFile();
-				Path path = Paths.get(saveFile.getAbsolutePath()+File.separator+file_1.getOriginalFilename());
-				Files.copy(file_1.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-				System.out.println("Residential Proof Uploaded Successfully");
-			} catch (IOException e) {		
-				e.printStackTrace();
+			FileUploadResult uploadResult = fileUploadUtil.uploadFile(file_1, tempUserId);
+			if (uploadResult.isSuccess()) {
+				user_data.setResidential_proof(uploadResult.getSavedFilename());
+				logger.info("Residential Proof uploaded: {}", uploadResult.getSavedFilename());
+			} else {
+				model.addAttribute("File_Error", "Residential proof: " + uploadResult.getErrorMessage());
+				model.addAttribute("input", user_data);
+				return "register";
 			}
 		}
 		
-		if(file_2 == null) {
+		if(file_2 == null || file_2.isEmpty()) {
 			user_data.setFinanacial_proof("No File Uploaded");
-			System.out.println("Financial Proof not uploaded!");
+			logger.debug("Financial Proof not uploaded");
 		}
 		else {
-			user_data.setFinanacial_proof(file_2.getOriginalFilename());
-			try {
-				File saveFile = new ClassPathResource("/").getFile();
-				Path path = Paths.get(saveFile.getAbsolutePath()+File.separator+file_2.getOriginalFilename());
-				Files.copy(file_2.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-				System.out.println("Financial Proof Uploaded Successfully");
-			} catch (IOException e) {		
-				e.printStackTrace();
+			FileUploadResult uploadResult = fileUploadUtil.uploadFile(file_2, tempUserId);
+			if (uploadResult.isSuccess()) {
+				user_data.setFinanacial_proof(uploadResult.getSavedFilename());
+				logger.info("Financial Proof uploaded: {}", uploadResult.getSavedFilename());
+			} else {
+				model.addAttribute("File_Error", "Financial proof: " + uploadResult.getErrorMessage());
+				model.addAttribute("input", user_data);
+				return "register";
 			}
 		}
 		
