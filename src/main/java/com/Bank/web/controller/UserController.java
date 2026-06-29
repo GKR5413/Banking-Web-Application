@@ -27,6 +27,7 @@ import com.Bank.web.service.UserService;
 import com.Bank.web.util.FileUploadUtil;
 import com.Bank.web.util.FileUploadUtil.FileUploadResult;
 import com.Bank.web.util.PasswordUtil;
+import com.Bank.web.util.PasswordUtil.PasswordValidationResult;
 
 @Controller
 public class UserController {
@@ -160,17 +161,24 @@ public class UserController {
 		}
 		
 		int passwordmatch = 1;
+		boolean passwordStrengthValid = true;
+		
 		if(cred.equals(cred2)) {
 			passwordmatch = 0;
+			
+			PasswordUtil.PasswordValidationResult passwordValidation = passwordUtil.validatePasswordStrength(cred);
+			if (!passwordValidation.isValid()) {
+				passwordStrengthValid = false;
+				model.addAttribute("PasswordError", passwordValidation.getErrorMessage());
+			}
 		}
 		else {
-			model.clear();
 			passwordmatch = 1;
-			String error = "Passwords doesn't match";
+			String error = "Passwords don't match";
 			model.addAttribute("PasswordError", error);
 		}
 		
-		if(check.getEmail() == 0 && check.getPhno() == 0 && check.getAadhar() == 0 && check.getPan() == 0 && passwordmatch == 0) {
+		if(check.getEmail() == 0 && check.getPhno() == 0 && check.getAadhar() == 0 && check.getPan() == 0 && passwordmatch == 0 && passwordStrengthValid) {
 			
 			String hashedPassword = passwordUtil.hashPassword(cred);
 			user_data.setCred(hashedPassword);

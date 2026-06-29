@@ -16,6 +16,7 @@ import com.Bank.web.controller.bean.AlertBean;
 import com.Bank.web.controller.bean.forgotPass;
 import com.Bank.web.service.UserService;
 import com.Bank.web.util.PasswordUtil;
+import com.Bank.web.util.PasswordUtil.PasswordValidationResult;
 
 @Controller
 public class ConfigPasswordController {
@@ -66,6 +67,14 @@ public class ConfigPasswordController {
 		
 		if(cred.equals(cred2)) {
 			
+			PasswordValidationResult passwordValidation = passwordUtil.validatePasswordStrength(cred);
+			if (!passwordValidation.isValid()) {
+				model.clear();
+				model.addAttribute("PasswordError", passwordValidation.getErrorMessage());
+				model.addAttribute("usid", usr_id);
+				return "resetpassword";
+			}
+			
 			String hashedPassword = passwordUtil.hashPassword(cred);
 			String out_msg = userService.resetPassword(user_id, hashedPassword);
 			 
@@ -83,8 +92,9 @@ public class ConfigPasswordController {
 		}
 		else {
 			model.clear();
-			String error = "Passwords doesn't match";			
+			String error = "Passwords don't match";			
 			model.addAttribute("PasswordError", error);
+			model.addAttribute("usid", usr_id);
 			return "resetpassword";
 		}
 		 
