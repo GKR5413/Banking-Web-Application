@@ -36,6 +36,7 @@
 	    <div class="container">
 	        <h2>Banking Login</h2>
 	        <form method="post" action="login">
+	            <input type="hidden" name="_csrf" value="${_csrf_token}"/>
 	            <div class="txt_field" >
 	                <input type="text" name="userId" onkeypress="return onlyNumberKey(event)" maxlength="10" autocomplete="off" required>
 	                <span></span>

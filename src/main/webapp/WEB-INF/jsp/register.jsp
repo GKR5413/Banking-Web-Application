@@ -56,7 +56,7 @@
 		<div class="content">
 			<c:if test="${not empty input}">
 		     <form action="register" method="post" enctype="multipart/form-data">
-				
+				<input type="hidden" name="_csrf" value="${_csrf_token}"/>
 				<div class="title">Account Registration</div>
 				
 				<div class="user-details">
@@ -241,6 +241,7 @@
 			<c:if test="${ empty input}">
 			
 			<form action="register" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="_csrf" value="${_csrf_token}"/>
 				<div class="title">Account Registration</div>
 				<div class="user-details">
 

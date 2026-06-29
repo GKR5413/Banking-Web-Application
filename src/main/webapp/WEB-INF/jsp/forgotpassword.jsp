@@ -39,6 +39,7 @@
 
     <div class="content">
       <form action="forgotpassword" method="post">
+        <input type="hidden" name="_csrf" value="${_csrf_token}"/>
         <div class="user-details_2">
           <div class="title">Forgot Password</div>      
           <br>

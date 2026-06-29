@@ -41,6 +41,7 @@
 		<p class="bag-head"><span style="text-transform: uppercase">SELECTED STOCK</span></p>
 	</div>
 	<form action="buySelectedStock" method = "post">
+		<input type="hidden" name="_csrf" value="${_csrf_token}"/>
 		<div class="bag-product">
 			<div class="description">
 			<p class="product-code small muted">Stock ID: ${sd.getStock_id()}</p>
