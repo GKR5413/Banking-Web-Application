@@ -15,11 +15,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.Bank.web.controller.bean.AlertBean;
 import com.Bank.web.controller.bean.forgotPass;
 import com.Bank.web.service.UserService;
+import com.Bank.web.util.PasswordUtil;
+import com.Bank.web.util.PasswordUtil.PasswordValidationResult;
 
 @Controller
 public class ConfigPasswordController {
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	PasswordUtil passwordUtil;
 	
 	
 	@RequestMapping(value = "/forgotpassword", method = RequestMethod.GET)
@@ -31,21 +36,16 @@ public class ConfigPasswordController {
 	public String forgotpass( ModelMap model,@RequestParam int usr_id, @RequestParam String email, RedirectAttributes redirectAttributes) {
 		forgotPass user = userService.validateUser(usr_id);
 		
-		if(user.getEmail() != null) {	// Checking if UserId is valid
-			if(user.getEmail().equals(email)) {
-				redirectAttributes.addFlashAttribute("usvid", usr_id);
-				return "redirect:/resetpassword";	
-			}else {
-				model.clear();
-				String error =  "Incorrect Email, Please check your Email and try again";
-				model.addAttribute("Invalid_Email", error);
-				return "forgotpassword"; // Redirect back to login with wrong Email error
-			}
-		}else {
+		boolean validCredentials = user.getEmail() != null && user.getEmail().equals(email);
+		
+		if(validCredentials) {
+			redirectAttributes.addFlashAttribute("usvid", usr_id);
+			return "redirect:/resetpassword";	
+		} else {
 			model.clear();
-			String error = "Incorrect UserId, Please check your UserId and try again";
-			model.addAttribute("Invalid_UserId", error);
-			return "forgotpassword";	// Redirect back to forgotpassword with wrong userid error
+			String error = "If the provided User ID and Email match our records, you will be redirected to reset your password.";
+			model.addAttribute("Validation_Message", error);
+			return "forgotpassword";
 		}
 	}
 		
@@ -63,11 +63,32 @@ public class ConfigPasswordController {
 	@RequestMapping(value = "/resetpassword", method = RequestMethod.POST)
 	public String Resetpassword(ModelMap model, @RequestParam String usr_id ,@RequestParam String cred, @RequestParam String cred2, RedirectAttributes rs) {
 	
-		int user_id = Integer.parseInt(usr_id); 	
+		if (usr_id == null || usr_id.isEmpty() || !usr_id.matches("^[0-9]{1,10}$")) {
+			return "redirect:/login";
+		}
+		
+		int user_id;
+		try {
+			user_id = Integer.parseInt(usr_id);
+			if (user_id < 0) {
+				return "redirect:/login";
+			}
+		} catch (NumberFormatException e) {
+			return "redirect:/login";
+		}
 		
 		if(cred.equals(cred2)) {
 			
-			String out_msg = userService.resetPassword(user_id, cred);
+			PasswordValidationResult passwordValidation = passwordUtil.validatePasswordStrength(cred);
+			if (!passwordValidation.isValid()) {
+				model.clear();
+				model.addAttribute("PasswordError", passwordValidation.getErrorMessage());
+				model.addAttribute("usid", usr_id);
+				return "resetpassword";
+			}
+			
+			String hashedPassword = passwordUtil.hashPassword(cred);
+			String out_msg = userService.resetPassword(user_id, hashedPassword);
 			 
 			AlertBean alert = new AlertBean();
 			  if(!out_msg.isEmpty()) {  
@@ -83,8 +104,9 @@ public class ConfigPasswordController {
 		}
 		else {
 			model.clear();
-			String error = "Passwords doesn't match";			
+			String error = "Passwords don't match";			
 			model.addAttribute("PasswordError", error);
+			model.addAttribute("usid", usr_id);
 			return "resetpassword";
 		}
 		 

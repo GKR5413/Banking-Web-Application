@@ -25,11 +25,8 @@
     </div>
   
   <div class="header_row_error">
-	       <c:if test="${not empty Invalid_Email}">
-           		<p class="error_email"><span id="error_string">ERROR: </span>${Invalid_Email}</p>
-           </c:if>
-           <c:if test="${not empty Invalid_UserId}">
-           		<p class="error_userid"><span id="error_string">ERROR: </span>${Invalid_UserId}</p>
+	       <c:if test="${not empty Validation_Message}">
+           		<p class="info_message"><c:out value="${Validation_Message}" escapeXml="true"/></p>
            </c:if>
     </div>
   <div class="outer-container">
@@ -39,6 +36,7 @@
 
     <div class="content">
       <form action="forgotpassword" method="post">
+        <input type="hidden" name="_csrf" value="${_csrf_token}"/>
         <div class="user-details_2">
           <div class="title">Forgot Password</div>      
           <br>

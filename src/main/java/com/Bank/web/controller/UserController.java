@@ -1,17 +1,13 @@
 package com.Bank.web.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Random;
-
+import java.security.SecureRandom;
+import java.util.Base64;
 
 import javax.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -28,12 +24,24 @@ import com.Bank.web.controller.bean.User;
 import com.Bank.web.controller.bean.User_Signup;
 import com.Bank.web.controller.bean.uniqueVariablesCheck;
 import com.Bank.web.service.UserService;
+import com.Bank.web.util.FileUploadUtil;
+import com.Bank.web.util.FileUploadUtil.FileUploadResult;
+import com.Bank.web.util.PasswordUtil;
+import com.Bank.web.util.PasswordUtil.PasswordValidationResult;
 
 @Controller
 public class UserController {
 	
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+	
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	PasswordUtil passwordUtil;
+	
+	@Autowired
+	FileUploadUtil fileUploadUtil;
 	
 //	Login API
 	@RequestMapping(value = "/login", method = RequestMethod.GET)
@@ -46,34 +54,56 @@ public class UserController {
 	public String welcomePage( ModelMap model,@RequestParam String userId, @RequestParam String cred, 
 			@ModelAttribute("alert_msg") AlertBean alert, HttpSession session, RedirectAttributes rs) {
 
-		 Random r = new Random();
-	     int n = r.nextInt();
-	     String Hexadecimal = Integer.toHexString(n);
-	     session.setAttribute("ssid", Hexadecimal);  	     
-	     session.setAttribute("usid", Integer.parseInt(userId));
-	     
 	     AlertBean alert1 = new AlertBean();
+	     
+	     if (userId == null || userId.isEmpty() || !userId.matches("^[0-9]{1,10}$")) {
+	    	 model.clear();
+	    	 model.addAttribute("Invalid_Credentials", "Invalid credentials. Please check your User ID and Password.");
+	    	 model.addAttribute("alert_msg", alert1.getAlert());
+	    	 return "index";
+	     }
+	     
+	     int parsedUserId;
+	     try {
+	    	 parsedUserId = Integer.parseInt(userId);
+	    	 if (parsedUserId < 0) {
+	    		 throw new NumberFormatException("Negative user ID");
+	    	 }
+	     } catch (NumberFormatException e) {
+	    	 model.clear();
+	    	 model.addAttribute("Invalid_Credentials", "Invalid credentials. Please check your User ID and Password.");
+	    	 model.addAttribute("alert_msg", alert1.getAlert());
+	    	 logger.warn("Invalid userId format attempted: {}", userId);
+	    	 return "index";
+	     }
 	
-	    User user = userService.getUserByUserId(userId);	//calling getUserByUserID method. 	
+	    User user = userService.getUserByUserId(userId);
  
-		if(user.getCred() != null) {	// Checking if UserId is valid
-			if(user.getCred().equals(cred)) {
-				String var= "yas";
-				rs.addFlashAttribute("uid", var);
-				return "redirect:/account";	
-			}else {
-				model.clear();
-				String error =  "Incorrect Password, Please check your Password and try again";
-				model.addAttribute("Invalid_Password", error);
-				model.addAttribute("alert_msg" ,alert1.getAlert());
-				return "index"; // Redirect back to login with wrong password error
-			}
-		}else {
+		boolean loginSuccess = false;
+		
+		if(user.getCred() != null && passwordUtil.verifyPassword(cred, user.getCred())) {
+			loginSuccess = true;
+		}
+		
+		if (loginSuccess) {
+			SecureRandom secureRandom = new SecureRandom();
+			byte[] sessionIdBytes = new byte[32];
+			secureRandom.nextBytes(sessionIdBytes);
+			String secureSessionId = Base64.getUrlEncoder().withoutPadding().encodeToString(sessionIdBytes);
+			
+			session.setAttribute("ssid", secureSessionId);
+			session.setAttribute("usid", parsedUserId);
+			
+			String var= "yas";
+			rs.addFlashAttribute("uid", var);
+			return "redirect:/account";	
+		} else {
 			model.clear();
-			String error = "Incorrect UserId, Please check your UserId and try again";
-			model.addAttribute("Invalid_UserId", error);
-			model.addAttribute("alert_msg" ,alert1.getAlert());
-			return "index";	// Redirect back to login with wrong userid error
+			String error = "Invalid credentials. Please check your User ID and Password.";
+			model.addAttribute("Invalid_Credentials", error);
+			model.addAttribute("alert_msg", alert1.getAlert());
+			logger.warn("Failed login attempt for userId: {}", userId);
+			return "index";
 		}
 	}
 	
@@ -91,36 +121,37 @@ public class UserController {
 								@RequestParam String cred, @RequestParam String cred2, ModelMap model, BindingResult result, 
 								RedirectAttributes rs,HttpSession session) {
 
+		int tempUserId = 0;
 		
-		if(file_1 == null) {
+		if(file_1 == null || file_1.isEmpty()) {
 			user_data.setResidential_proof("No File Uploaded");
-			System.out.println("Residential Proof not uploaded!");
+			logger.debug("Residential Proof not uploaded");
 		}
 		else {
-			user_data.setResidential_proof(file_1.getOriginalFilename());
-			try {
-				File saveFile = new ClassPathResource("/").getFile();
-				Path path = Paths.get(saveFile.getAbsolutePath()+File.separator+file_1.getOriginalFilename());
-				Files.copy(file_1.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-				System.out.println("Residential Proof Uploaded Successfully");
-			} catch (IOException e) {		
-				e.printStackTrace();
+			FileUploadResult uploadResult = fileUploadUtil.uploadFile(file_1, tempUserId);
+			if (uploadResult.isSuccess()) {
+				user_data.setResidential_proof(uploadResult.getSavedFilename());
+				logger.info("Residential Proof uploaded: {}", uploadResult.getSavedFilename());
+			} else {
+				model.addAttribute("File_Error", "Residential proof: " + uploadResult.getErrorMessage());
+				model.addAttribute("input", user_data);
+				return "register";
 			}
 		}
 		
-		if(file_2 == null) {
+		if(file_2 == null || file_2.isEmpty()) {
 			user_data.setFinanacial_proof("No File Uploaded");
-			System.out.println("Financial Proof not uploaded!");
+			logger.debug("Financial Proof not uploaded");
 		}
 		else {
-			user_data.setFinanacial_proof(file_2.getOriginalFilename());
-			try {
-				File saveFile = new ClassPathResource("/").getFile();
-				Path path = Paths.get(saveFile.getAbsolutePath()+File.separator+file_2.getOriginalFilename());
-				Files.copy(file_2.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-				System.out.println("Financial Proof Uploaded Successfully");
-			} catch (IOException e) {		
-				e.printStackTrace();
+			FileUploadResult uploadResult = fileUploadUtil.uploadFile(file_2, tempUserId);
+			if (uploadResult.isSuccess()) {
+				user_data.setFinanacial_proof(uploadResult.getSavedFilename());
+				logger.info("Financial Proof uploaded: {}", uploadResult.getSavedFilename());
+			} else {
+				model.addAttribute("File_Error", "Financial proof: " + uploadResult.getErrorMessage());
+				model.addAttribute("input", user_data);
+				return "register";
 			}
 		}
 		
@@ -151,18 +182,27 @@ public class UserController {
 		}
 		
 		int passwordmatch = 1;
+		boolean passwordStrengthValid = true;
+		
 		if(cred.equals(cred2)) {
 			passwordmatch = 0;
+			
+			PasswordUtil.PasswordValidationResult passwordValidation = passwordUtil.validatePasswordStrength(cred);
+			if (!passwordValidation.isValid()) {
+				passwordStrengthValid = false;
+				model.addAttribute("PasswordError", passwordValidation.getErrorMessage());
+			}
 		}
 		else {
-			model.clear();
 			passwordmatch = 1;
-			String error = "Passwords doesn't match";
+			String error = "Passwords don't match";
 			model.addAttribute("PasswordError", error);
 		}
 		
-		if(check.getEmail() == 0 && check.getPhno() == 0 && check.getAadhar() == 0 && check.getPan() == 0 && passwordmatch == 0) {
+		if(check.getEmail() == 0 && check.getPhno() == 0 && check.getAadhar() == 0 && check.getPan() == 0 && passwordmatch == 0 && passwordStrengthValid) {
 			
+			String hashedPassword = passwordUtil.hashPassword(cred);
+			user_data.setCred(hashedPassword);
 			String out_msg = userService.RegisterUser(user_data);
 			
 			AlertBean alert = new AlertBean();

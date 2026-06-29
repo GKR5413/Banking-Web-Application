@@ -27,10 +27,12 @@
 		
  		<div class="additional_Links">	
 			<form action="todemat" method="post">
+				  <input type="hidden" name="_csrf" value="${_csrf_token}"/>
 				  <input id="hyperlink_button" type="submit" value="Demat Account" />
 			</form>
 			<hr class="xs-vhr">
 			<form action="tooverdraft" method="post">
+				  <input type="hidden" name="_csrf" value="${_csrf_token}"/>
 				  <input id="hyperlink_button" type="submit" value="Overdraft" />
 			</form>
 		</div>
@@ -48,27 +50,27 @@
 			<ul class = "personal-info">
 				<li>
 					<label>Account Number :</label>
-					<span>${data.acc_no}</span>
+					<span><c:out value="${data.acc_no}" escapeXml="true"/></span>
 				</li>
 				<li>
 					<label>Account Type :</label>
-					<span>${data.acc_type}</span>
+					<span><c:out value="${data.acc_type}" escapeXml="true"/></span>
 				</li>
 				<li>
 					<label>Account Status :</label>
-					<span>${data.acc_status}</span>
+					<span><c:out value="${data.acc_status}" escapeXml="true"/></span>
 				</li>
 				<li>
 					<label>IFSC :</label>
-					<span>${data.ifsc}</span>
+					<span><c:out value="${data.ifsc}" escapeXml="true"/></span>
 				</li>
 				<li>
 					<label>Branch :</label>
-					<span>${data.branchname}</span>
+					<span><c:out value="${data.branchname}" escapeXml="true"/></span>
 				</li>
 				<li>
 					<label>Branch ID:</label>
-					<span>${data.branchid}</span>
+					<span><c:out value="${data.branchid}" escapeXml="true"/></span>
 				</li>
 				
 				<li>
@@ -119,18 +121,18 @@
 			
 			<c:forEach var="d" items="${td}">
 			<tr>	
-				<td data-cell="Date">${d.t_date}</td>
-				<td data-cell="Transaction ID">${d.t_id}</td>
-				<td data-cell="Payment Method ">${d.pmnt_method}</td>
-				<td data-cell="Payment Type">${d.pmnt_type}</td>
+				<td data-cell="Date"><c:out value="${d.t_date}" escapeXml="true"/></td>
+				<td data-cell="Transaction ID"><c:out value="${d.t_id}" escapeXml="true"/></td>
+				<td data-cell="Payment Method "><c:out value="${d.pmnt_method}" escapeXml="true"/></td>
+				<td data-cell="Payment Type"><c:out value="${d.pmnt_type}" escapeXml="true"/></td>
 				<c:if test="${not empty ind}">
-					<td data-cell="Amount"><span>&#8377 </span>${d.amnt}</td>
+					<td data-cell="Amount"><span>&#8377 </span><c:out value="${d.amnt}" escapeXml="true"/></td>
 				</c:if>
 				<c:if test="${not empty usd}">
-					<td data-cell="Amount"><span>&#36 </span>${d.amnt}</td>
+					<td data-cell="Amount"><span>&#36 </span><c:out value="${d.amnt}" escapeXml="true"/></td>
 				</c:if>
 				<c:if test="${not empty euro}">
-					<td data-cell="Amount"><span>&#8364 </span>${d.amnt}</td>
+					<td data-cell="Amount"><span>&#8364 </span><c:out value="${d.amnt}" escapeXml="true"/></td>
 				</c:if>
 			</tr>
 			</c:forEach>

@@ -3,6 +3,8 @@ package com.Bank.web.controller;
 
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,18 +22,18 @@ import com.Bank.web.service.UserService;
 @Controller
 public class overdraftController {
 	
+	private static final Logger logger = LoggerFactory.getLogger(overdraftController.class);
+	
 	@Autowired
 	UserService userService;
 	
 	@RequestMapping(value = "/overdraft", method = RequestMethod.GET)
 	public String getOverdraft( @ModelAttribute("uid") String uid, Model model, HttpSession session) {
-		//if(!uid.isEmpty()) {
-	//		String Session = (String) session.getAttribute("ssid");
 			if(((String) session.getAttribute("ssid")) == null) {
 				return "redirect:/login";
 			}
 			else {
-				System.out.println((String) session.getAttribute("ssid"));
+				logger.debug("User accessing overdraft page");
 				int usid = (int) session.getAttribute("usid");
 				
 				model.addAttribute("data", new overdraftBean());

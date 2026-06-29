@@ -36,6 +36,7 @@
 	<div class="container_2">
 		<div class="content">
 			<form action="resetpassword" method="post">
+				<input type="hidden" name="_csrf" value="${_csrf_token}"/>
 				<div class="title">Reset Account Password</div>
 				<br>
 				<div class="user-details_2">

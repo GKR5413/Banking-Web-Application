@@ -33,19 +33,22 @@
     </div>
 	 <div class="header_row_error">
 		<c:if test="${not empty Email_Error}">
-        <p class="error_email"><span id="error_string">ERROR: </span>${Email_Error}</p>
+        <p class="error_email"><span id="error_string">ERROR: </span><c:out value="${Email_Error}" escapeXml="true"/></p>
         </c:if>
         <c:if test="${not empty PhoneNumber_Error}">
-        <p class="error_phone"><span id="error_string">ERROR: </span>${PhoneNumber_Error}</p>
+        <p class="error_phone"><span id="error_string">ERROR: </span><c:out value="${PhoneNumber_Error}" escapeXml="true"/></p>
         </c:if>
         <c:if test="${not empty Aadhar_Error}">
-        <p class="error_aadhar"><span id="error_string">ERROR: </span>${Aadhar_Error}</p>
+        <p class="error_aadhar"><span id="error_string">ERROR: </span><c:out value="${Aadhar_Error}" escapeXml="true"/></p>
         </c:if>
         <c:if test="${not empty Pan_Error}">
-        <p class="error_pan"><span id="error_string">ERROR: </span>${Pan_Error}</p>
+        <p class="error_pan"><span id="error_string">ERROR: </span><c:out value="${Pan_Error}" escapeXml="true"/></p>
         </c:if>  
         <c:if test="${not empty PasswordError}">
-      		<p class="error_password"><span id="error_string">ERROR: </span>${PasswordError}</p>
+      		<p class="error_password"><span id="error_string">ERROR: </span><c:out value="${PasswordError}" escapeXml="true"/></p>
+        </c:if>
+        <c:if test="${not empty File_Error}">
+      		<p class="error_file"><span id="error_string">ERROR: </span><c:out value="${File_Error}" escapeXml="true"/></p>
         </c:if>
 	</div>	
 	
@@ -53,7 +56,7 @@
 		<div class="content">
 			<c:if test="${not empty input}">
 		     <form action="register" method="post" enctype="multipart/form-data">
-				
+				<input type="hidden" name="_csrf" value="${_csrf_token}"/>
 				<div class="title">Account Registration</div>
 				
 				<div class="user-details">
@@ -238,6 +241,7 @@
 			<c:if test="${ empty input}">
 			
 			<form action="register" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="_csrf" value="${_csrf_token}"/>
 				<div class="title">Account Registration</div>
 				<div class="user-details">
 

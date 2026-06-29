@@ -25,6 +25,7 @@
 	<div class="container">
 		<div class="content">
 			<form action="overdraft" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="_csrf" value="${_csrf_token}"/>
 				<div class="title">Overdraft Application</div>
 				<div class="user-details">
 					<input type="hidden" name="usr_id" type="text" value="${usid}" />
