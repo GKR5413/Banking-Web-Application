@@ -21,6 +21,7 @@ import com.Bank.web.controller.bean.pagination;
 import com.Bank.web.controller.bean.selectedStockDetails;
 import com.Bank.web.controller.bean.shares;
 import com.Bank.web.service.UserService;
+import com.Bank.web.util.InputValidator;
 import com.Bank.web.util.SecurityUtil;
 
 @Controller
@@ -30,6 +31,9 @@ public class dematController {
 	
 	@Autowired
 	SecurityUtil securityUtil;
+	
+	@Autowired
+	InputValidator inputValidator;
 	
 	@RequestMapping(value="/Rdemat", method= RequestMethod.GET)
 	public String reload(@RequestParam(value="pgno1", required=false, defaultValue="0") int pgno1,
@@ -173,17 +177,18 @@ public class dematController {
 				start1 = page1.getPgno() * recordCount1;
 				model.addAttribute("start1", start1);
 				
-				// Sorting
+				// Sorting - validate against whitelist
 				
-				String sortfield = page1.getSortfield();
-				String sortdir = page1.getSortDir();
+				String sortfield = inputValidator.validateSharesSortField(page1.getSortfield());
+				String sortdir = inputValidator.validateSortDirection(page1.getSortDir());
+				String keyword1 = inputValidator.sanitizeSearchKeyword(page1.getKeyword());
 				 
 				model.addAttribute("sortfield1", sortfield);
 				model.addAttribute("sortdir1", sortdir);
 				model.addAttribute("revsortdir1", sortdir.equals("ASC") ? "DESC" : "ASC" );
-				model.addAttribute("keyword1", page1.getKeyword());
+				model.addAttribute("keyword1", keyword1);
 				
-				List<shares> data = userService.getShares(d.getAcc_no(), start1, recordCount1, sortfield, sortdir, page1.getKeyword());
+				List<shares> data = userService.getShares(d.getAcc_no(), start1, recordCount1, sortfield, sortdir, keyword1);
 				
 				
 				int start2 = 0;
@@ -232,17 +237,18 @@ public class dematController {
 				start2 =  page2.getPgno()* recordCount2;
 				model.addAttribute("start2", start2);
 				
-				// Sorting
+				// Sorting - validate against whitelist
 				
-				String sortfield2 = page2.getSortfield();
-				String sortdir2 = page2.getSortDir();
+				String sortfield2 = inputValidator.validateNewSharesSortField(page2.getSortfield());
+				String sortdir2 = inputValidator.validateSortDirection(page2.getSortDir());
+				String keyword2 = inputValidator.sanitizeSearchKeyword(page2.getKeyword());
 				 
 				model.addAttribute("sortfield2", sortfield2);
 				model.addAttribute("sortdir2", sortdir2);
 				model.addAttribute("revsortdir2", sortdir2.equals("ASC") ? "DESC" : "ASC" );
-				model.addAttribute("keyword2", page2.getKeyword());
+				model.addAttribute("keyword2", keyword2);
 				
-				List<newAvailableShares> Stocks_data = userService.fetchNewStocks(start2, recordCount2, sortfield2, sortdir2, page2.getKeyword());
+				List<newAvailableShares> Stocks_data = userService.fetchNewStocks(start2, recordCount2, sortfield2, sortdir2, keyword2);
 
 				// Data set Being sent to the view
 				model.addAttribute("d", d);

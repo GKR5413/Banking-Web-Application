@@ -17,12 +17,16 @@ import com.Bank.web.controller.bean.T_Data;
 import com.Bank.web.controller.bean.pagination;
 import com.Bank.web.controller.bean.userInfo;
 import com.Bank.web.service.UserService;
+import com.Bank.web.util.InputValidator;
 
 @Controller
 public class AccountController {
 
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	InputValidator inputValidator;
 
 	
 	  @RequestMapping(value="/Raccount", method= RequestMethod.GET) 
@@ -129,16 +133,17 @@ public class AccountController {
 				start = page.getPgno() * recordCount;
 				model.addAttribute("start", start);
 				
-				String sortfield = page.getSortfield();
-				String sortdir = page.getSortDir();
+				String sortfield = inputValidator.validateTransactionSortField(page.getSortfield());
+				String sortdir = inputValidator.validateSortDirection(page.getSortDir());
+				String keyword = inputValidator.sanitizeSearchKeyword(page.getKeyword());
 				
 				model.addAttribute("sortfield", sortfield);
 				model.addAttribute("sortdir", sortdir);
 				model.addAttribute("revsortdir", sortdir.equals("ASC") ? "DESC" : "ASC" );
-				model.addAttribute("keyword", page.getKeyword());
+				model.addAttribute("keyword", keyword);
 
 				List<T_Data> tdata = userService.getTransactionHistory(data.getAcc_no(), data.getCurrency(), start,
-																			recordCount, sortfield, sortdir, page.getKeyword());
+																			recordCount, sortfield, sortdir, keyword);
 
 				// Header Variables
 				if (data.getAcc_type().equals("savings")) {
