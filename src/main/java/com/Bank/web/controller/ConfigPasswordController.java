@@ -15,11 +15,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.Bank.web.controller.bean.AlertBean;
 import com.Bank.web.controller.bean.forgotPass;
 import com.Bank.web.service.UserService;
+import com.Bank.web.util.PasswordUtil;
 
 @Controller
 public class ConfigPasswordController {
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	PasswordUtil passwordUtil;
 	
 	
 	@RequestMapping(value = "/forgotpassword", method = RequestMethod.GET)
@@ -67,7 +71,8 @@ public class ConfigPasswordController {
 		
 		if(cred.equals(cred2)) {
 			
-			String out_msg = userService.resetPassword(user_id, cred);
+			String hashedPassword = passwordUtil.hashPassword(cred);
+			String out_msg = userService.resetPassword(user_id, hashedPassword);
 			 
 			AlertBean alert = new AlertBean();
 			  if(!out_msg.isEmpty()) {  

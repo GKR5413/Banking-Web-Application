@@ -28,12 +28,16 @@ import com.Bank.web.controller.bean.User;
 import com.Bank.web.controller.bean.User_Signup;
 import com.Bank.web.controller.bean.uniqueVariablesCheck;
 import com.Bank.web.service.UserService;
+import com.Bank.web.util.PasswordUtil;
 
 @Controller
 public class UserController {
 	
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	PasswordUtil passwordUtil;
 	
 //	Login API
 	@RequestMapping(value = "/login", method = RequestMethod.GET)
@@ -54,10 +58,10 @@ public class UserController {
 	     
 	     AlertBean alert1 = new AlertBean();
 	
-	    User user = userService.getUserByUserId(userId);	//calling getUserByUserID method. 	
+	    User user = userService.getUserByUserId(userId);
  
-		if(user.getCred() != null) {	// Checking if UserId is valid
-			if(user.getCred().equals(cred)) {
+		if(user.getCred() != null) {
+			if(passwordUtil.verifyPassword(cred, user.getCred())) {
 				String var= "yas";
 				rs.addFlashAttribute("uid", var);
 				return "redirect:/account";	
@@ -66,14 +70,14 @@ public class UserController {
 				String error =  "Incorrect Password, Please check your Password and try again";
 				model.addAttribute("Invalid_Password", error);
 				model.addAttribute("alert_msg" ,alert1.getAlert());
-				return "index"; // Redirect back to login with wrong password error
+				return "index";
 			}
 		}else {
 			model.clear();
 			String error = "Incorrect UserId, Please check your UserId and try again";
 			model.addAttribute("Invalid_UserId", error);
 			model.addAttribute("alert_msg" ,alert1.getAlert());
-			return "index";	// Redirect back to login with wrong userid error
+			return "index";
 		}
 	}
 	
@@ -163,6 +167,8 @@ public class UserController {
 		
 		if(check.getEmail() == 0 && check.getPhno() == 0 && check.getAadhar() == 0 && check.getPan() == 0 && passwordmatch == 0) {
 			
+			String hashedPassword = passwordUtil.hashPassword(cred);
+			user_data.setCred(hashedPassword);
 			String out_msg = userService.RegisterUser(user_data);
 			
 			AlertBean alert = new AlertBean();
