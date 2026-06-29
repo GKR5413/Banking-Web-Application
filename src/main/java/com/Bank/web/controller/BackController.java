@@ -1,14 +1,21 @@
 package com.Bank.web.controller;
 
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.Bank.web.util.SecurityUtil;
+
 @Controller
 public class BackController {
 	
-//	Performing Back before login or session initialization.
+	@Autowired
+	SecurityUtil securityUtil;
+	
 	@RequestMapping(value = "/back", method = RequestMethod.GET)
 	public String Back(RedirectAttributes rs) {
 		String var= "yas";
@@ -16,32 +23,41 @@ public class BackController {
 		return "redirect:/login"; 
 	}
 	
-//  Performing Back in overdraft
 	@RequestMapping(value = "/backtoaccount", method = RequestMethod.GET)
-	public String BackToAccountPage(RedirectAttributes rs) {
+	public String BackToAccountPage(HttpSession session, RedirectAttributes rs) {
+		if (!securityUtil.isAuthenticated(session)) {
+			return "redirect:/login";
+		}
 		String var= "yas";
 		rs.addFlashAttribute("uid", var);
 		return "redirect:/account"; 
 	}
 	
-// Perform Back in Demat Landing Page
-	
 	@RequestMapping(value = "/demattoaccount", method = RequestMethod.GET)
-	public String DematToAccountPage(RedirectAttributes rs) {
+	public String DematToAccountPage(HttpSession session, RedirectAttributes rs) {
+		if (!securityUtil.isAuthenticated(session)) {
+			return "redirect:/login";
+		}
 		String var= "yas";
 		rs.addFlashAttribute("uid", var);
 		return "redirect:/account"; 
 	}
 	
 	@RequestMapping(value = "/gobacktodemat", method = RequestMethod.GET)
-	public String BuyStocktoDemat(RedirectAttributes rs) {
+	public String BuyStocktoDemat(HttpSession session, RedirectAttributes rs) {
+		if (!securityUtil.isAuthenticated(session)) {
+			return "redirect:/login";
+		}
 		String var= "yas";
 		rs.addFlashAttribute("uid", var);
 		return "redirect:/demat"; 
 	}
 	
 	@RequestMapping(value = "/selltodemat", method = RequestMethod.GET)
-	public String selltoDemat(RedirectAttributes rs) {
+	public String selltoDemat(HttpSession session, RedirectAttributes rs) {
+		if (!securityUtil.isAuthenticated(session)) {
+			return "redirect:/login";
+		}
 		String var= "yas";
 		rs.addFlashAttribute("uid", var);
 		return "redirect:/demat"; 
